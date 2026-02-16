@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz: Warum Sport wichtig ist</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f8ff;
+  margin: 0;
+  padding: 10px;
+  max-width: 900px;
+  margin: auto;
+}
+h1, h2 {
+  text-align: center;
+  color: #003366;
+}
+.frage {
+  background: white;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+label {
+  display: block;
+  background: #eef4ff;
+  padding: 8px;
+  margin: 6px 0;
+  border-radius: 8px;
+}
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 1rem;
+  background: #0059b3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+}
+button:hover {
+  background: #004080;
+}
+.feedback {
+  margin-top: 8px;
+  font-weight: bold;
+}
+#timer {
+  font-size: 1.2rem;
+  text-align: center;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Quiz: Warum Sport wichtig ist</h1>
+<div id="timer">Zeit: 10:00</div>
+
+<div id="quiz"></div>
+
+<h2 id="ergebnis"></h2>
+<h2 id="note"></h2>
+
+<div style="text-align:center;">
+  <p><b>Name oder Kürzel:</b></p>
+  <input id="name" placeholder="z. B. Max M." style="padding:8px;width:80%;">
+  <br><br>
+  <button onclick="downloadCSV()">Ergebnis herunterladen</button>
+</div>
+
+<script>
+let timeLeft = 600;
+let score = 0;
+let answered = [];
+
+const timer = setInterval(() => {
+  let m = Math.floor(timeLeft / 60);
+  let s = timeLeft % 60;
+  document.getElementById("timer").innerText =
+    `Zeit: ${m}:${s.toString().padStart(2,"0")}`;
+  timeLeft--;
+  if (timeLeft < 0) clearInterval(timer);
+}, 1000);
+
+const questions = [
+
+{ q: "Worum geht es im Text hauptsächlich?",
+  a: [
+    "um Sportnoten",
+    "um Leistungssport",
+    "um die Bedeutung von Sport für Körper, Kopf und Alltag",
+    "um Sportarten"
+  ],
+  r: 2,
+  e: "Der Text erklärt, warum Sport für Körper, Kopf und Alltag wichtig ist."
+},
+
+{ q: "Was stärkt Sport laut Text besonders?",
+  a: [
+    "nur Muskeln",
+    "Herz und Lunge",
+    "nur Knochen",
+    "nur das Gehirn"
+  ],
+  r: 1,
+  e: "Sport stärkt vor allem Herz und Lunge."
+},
+
+{ q: "Warum ist Sport gut für den Körper?",
+  a: [
+    "man wird größer",
+    "Muskeln und Knochen werden kräftiger",
+    "man schläft weniger",
+    "man braucht keine Pausen"
+  ],
+  r: 1,
+  e: "Durch Bewegung werden Muskeln und Knochen gestärkt."
+},
+
+{ q: "Welche Wirkung hat Sport auf den Kopf?",
+  a: [
+    "keine",
+    "er macht aggressiv",
+    "er hilft beim Stressabbau",
+    "er macht immer müde"
+  ],
+  r: 2,
+  e: "Sport hilft, Stress abzubauen."
+},
+
+{ q: "Was passiert mit der Stimmung beim Sport?",
+  a: [
+    "sie wird schlechter",
+    "sie bleibt gleich",
+    "sie kann besser werden",
+    "sie ist egal"
+  ],
+  r: 2,
+  e: "Beim Sport werden Stoffe ausgeschüttet, die gute Laune machen."
+},
+
+{ q: "Warum kann Sport beim Lernen helfen?",
+  a: [
+    "weniger Hausaufgaben",
+    "bessere Konzentration",
+    "länger wach bleiben",
+    "mehr Tests"
+  ],
+  r: 1,
+  e: "Nach Bewegung kann man sich besser konzentrieren."
+},
+
+{ q: "Was lernt man beim Sport im Umgang mit anderen?",
+  a: [
+    "Regeln brechen",
+    "alleine arbeiten",
+    "Fairness und Teamarbeit",
+    "andere ärgern"
+  ],
+  r: 2,
+  e: "Sport fördert Teamarbeit und Fairness."
+},
+
+{ q: "Was stärkt Sport zusätzlich?",
+  a: [
+    "nur den Körper",
+    "nur den Kopf",
+    "das Selbstvertrauen",
+    "nur die Noten"
+  ],
+  r: 2,
+  e: "Durch Übung wächst das Selbstvertrauen."
+},
+
+{ q: "Muss Sport immer im Verein stattfinden?",
+  a: [
+    "ja",
+    "nein, auch Bewegung im Alltag zählt",
+    "nur in der Schule",
+    "nur mit Trainer"
+  ],
+  r: 1,
+  e: "Auch Alltagsbewegung zählt als Sport."
+},
+
+{ q: "Welche Bewegung zählt laut Text als Sport?",
+  a: [
+    "nur Wettkämpfe",
+    "nur Fußball",
+    "Spazierengehen oder Fahrradfahren",
+    "nur Fitnessstudio"
+  ],
+  r: 2,
+  e: "Auch einfache Bewegung ist Sport."
+}
+
+];
+
+const quiz = document.getElementById("quiz");
+
+questions.forEach((f, i) => {
+  const d = document.createElement("div");
+  d.className = "frage";
+  d.innerHTML = `<p><b>${i+1}. ${f.q}</b></p>`;
+
+  f.a.forEach((x, j) => {
+    d.innerHTML +=
+      `<label>
+        <input type="radio" name="q${i}" value="${j}">
+        ${x}
+      </label>`;
+  });
+
+  d.innerHTML +=
+    `<button onclick="check(${i})">Antwort prüfen</button>
+     <div class="feedback" id="f${i}"></div>`;
+
+  quiz.appendChild(d);
+});
+
+function check(i) {
+  if (answered[i]) return;
+  const sel = document.querySelector(`input[name="q${i}"]:checked`);
+  if (!sel) return alert("Bitte eine Antwort auswählen.");
+  const ok = Number(sel.value) === questions[i].r;
+  document.getElementById("f"+i).innerText =
+    ok ? "✔ Richtig: " + questions[i].e
+       : "✘ Falsch: " + questions[i].e;
+  if (ok) score++;
+  answered[i] = true;
+
+  const p = Math.round(score / questions.length * 100);
+  document.getElementById("ergebnis").innerText =
+    `Punkte: ${score}/${questions.length} (${p}%)`;
+  document.getElementById("note").innerText =
+    "Note: " + (p>=90?"1":p>=75?"2":p>=60?"3":p>=45?"4":"5/6");
+}
+
+function downloadCSV() {
+  const n = document.getElementById("name").value;
+  if (!n) return alert("Name eingeben");
+  const csv = `Name;Punkte\n${n};${score}`;
+  const b = new Blob([csv], {type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(b);
+  a.download = "sport_quiz_ergebnis.csv";
+  a.click();
+}
+</script>
+
+</body>
+</html>
